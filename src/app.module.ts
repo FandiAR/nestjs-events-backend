@@ -1,3 +1,4 @@
+import { AuthModule } from './auth/auth.module';
 import { SchoolModule } from './school/school.module';
 import { AppDummy } from './app.dummy';
 import { AppSundaService } from './app.sunda.service';
@@ -23,6 +24,7 @@ import ormConfigProd from './config/orm.config.prod';
     }),
     EventsModule,
     SchoolModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
