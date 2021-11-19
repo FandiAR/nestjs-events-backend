@@ -1,3 +1,4 @@
+import { UsersController } from './users.controller';
 import { JWTStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
 import { User } from './user.entity';
@@ -20,6 +21,6 @@ import { AuthService } from './auth.service';
     }),
   ],
   providers: [LocalStrategy, JWTStrategy, AuthService],
-  controllers: [AuthController],
+  controllers: [AuthController, UsersController],
 })
 export class AuthModule {}
