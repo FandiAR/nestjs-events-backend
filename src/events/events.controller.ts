@@ -1,3 +1,4 @@
+import { AuthGuardJwt } from './../auth/auth-guard.jwt';
 import { ListEvents } from './input/list.events';
 import { EventsService } from './events.service';
 import { Attendee } from 'src/events/atendee.entity';
@@ -15,12 +16,15 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { Event } from './event.entity';
 import { Like, MoreThan, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { User } from 'src/auth/user.entity';
 
 @Controller('/events')
 export class EventsController {
@@ -28,7 +32,7 @@ export class EventsController {
 
   constructor(
     @InjectRepository(Event)
-    private readonly repository: Repository<Event>,
+    private readonly eventRepository: Repository<Event>,
 
     @InjectRepository(Attendee)
     private readonly attendeeRepository: Repository<Attendee>,
@@ -38,7 +42,7 @@ export class EventsController {
 
   @Get('/practice')
   async practice() {
-    return await this.repository.find({
+    return await this.eventRepository.find({
       select: ['id', 'when'], // select show field
       // filter with some spesific condition
       where: [
@@ -71,7 +75,7 @@ export class EventsController {
     // await this.attendeeRepository.save(attendee);
     // return event;
 
-    return await this.repository
+    return await this.eventRepository
       .createQueryBuilder('d')
       .select(['d.id', 'd.name'])
       .orderBy('d.name', 'ASC')
@@ -106,11 +110,9 @@ export class EventsController {
   }
 
   @Post()
-  async create(@Body() input: CreateEventDto) {
-    return await this.repository.save({
-      ...input,
-      when: new Date(input.when),
-    });
+  @UseGuards(AuthGuardJwt)
+  async create(@Body() input: CreateEventDto, @CurrentUser() user: User) {
+    return await this.eventsService.createEvent(input, user);
   }
 
   @Patch(':id')
@@ -118,11 +120,11 @@ export class EventsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() input: UpdateEventDto,
   ) {
-    const event = await this.repository.findOne(id);
+    const event = await this.eventRepository.findOne(id);
     if (!event) {
       throw new NotFoundException();
     }
-    return await this.repository.save({
+    return await this.eventRepository.save({
       ...event,
       ...input,
       when: input.when ? new Date(input.when) : event.when,

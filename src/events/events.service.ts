@@ -1,3 +1,5 @@
+import { User } from './../auth/user.entity';
+import { CreateEventDto } from './input/create-events.dto';
 import { paginate, PaginateOptions } from './../pagination/paginator';
 import { ListEvents, WhenEventFilter } from './input/list.events';
 import { Injectable, Logger } from '@nestjs/common';
@@ -12,13 +14,11 @@ export class EventsService {
 
   constructor(
     @InjectRepository(Event)
-    private readonly eventsRepository: Repository<Event>,
+    private readonly eventRepository: Repository<Event>,
   ) {}
 
   private getEventBaseQuery() {
-    return this.eventsRepository
-      .createQueryBuilder('e')
-      .orderBy('e.id', 'DESC');
+    return this.eventRepository.createQueryBuilder('e').orderBy('e.id', 'DESC');
   }
 
   public getEventsWithAttendeeCountQuery() {
@@ -105,8 +105,16 @@ export class EventsService {
     return await query.getOne();
   }
 
+  public async createEvent(input: CreateEventDto, user: User): Promise<Event> {
+    return await this.eventRepository.save({
+      ...input,
+      organizer: user,
+      when: new Date(input.when),
+    });
+  }
+
   public async deleteEvent(id: number): Promise<DeleteResult> {
-    return await this.eventsRepository
+    return await this.eventRepository
       .createQueryBuilder('e')
       .delete()
       .where('id = :id', { id })
