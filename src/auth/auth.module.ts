@@ -1,3 +1,4 @@
+import { JWTStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
 import { User } from './user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,7 +19,7 @@ import { AuthService } from './auth.service';
       }),
     }),
   ],
-  providers: [LocalStrategy, AuthService],
+  providers: [LocalStrategy, JWTStrategy, AuthService],
   controllers: [AuthController],
 })
 export class AuthModule {}
