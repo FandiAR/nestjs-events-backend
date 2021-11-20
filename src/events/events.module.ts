@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 import { Event } from './event.entity';
 import { AttendeesService } from './attendees.service';
 import { EventsOrganizedByUserController } from './events-organized-by-user.controller';
+import { CurrentUserEventAttendanceController } from './current-user-event-attendance.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Event, Attendee])],
@@ -14,6 +15,7 @@ import { EventsOrganizedByUserController } from './events-organized-by-user.cont
     EventsController,
     EventAttendeesController,
     EventsOrganizedByUserController,
+    CurrentUserEventAttendanceController,
   ],
   providers: [EventsService, AttendeesService],
 })
