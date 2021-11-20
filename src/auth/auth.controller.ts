@@ -19,6 +19,15 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  /**
+   * For Login With Registered Username and Password
+   * url: localhost:7000/auth/login
+   * method: POST
+   * payload: {
+        "username": "string",
+        "password": "string"
+      }
+  */
   @UseGuards(AuthGuardLocal)
   async login(@CurrentUser() user: User) {
     return {

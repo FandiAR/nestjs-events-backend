@@ -14,6 +14,19 @@ export class UsersController {
   ) {}
 
   @Post()
+  /**
+   * For Registering New User
+   * url: localhost:7000/users
+   * method: POST
+   * payload: {
+        "username": "string",
+        "password": "string",
+        "retypedPassword": "string",
+        "email": "string",
+        "firstName": "string",
+        "lastName": "string"
+      }
+  */
   async create(@Body() createUserDto: CreateUserDTO) {
     const user = new User();
 
