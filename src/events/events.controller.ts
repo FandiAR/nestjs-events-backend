@@ -27,8 +27,8 @@ import {
 // import { Event } from './event.entity';
 // import { Like, MoreThan, Repository } from 'typeorm';
 // import { InjectRepository } from '@nestjs/typeorm';
-import { CurrentUser } from 'src/auth/current-user.decorator';
-import { User } from 'src/auth/user.entity';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../auth/user.entity';
 
 @Controller('/events')
 @SerializeOptions({ strategy: 'excludeAll' })

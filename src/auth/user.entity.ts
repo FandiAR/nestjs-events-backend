@@ -7,9 +7,9 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Event } from 'src/events/event.entity';
+import { Event } from '../events/event.entity';
 import { Expose } from 'class-transformer';
-import { Attendee } from 'src/events/atendee.entity';
+import { Attendee } from '../events/atendee.entity';
 
 @Entity()
 export class User {
