@@ -3,14 +3,19 @@ import { Repository } from 'typeorm';
 import { Event } from './event.entity';
 import { EventsService } from './events.service';
 import { Test } from '@nestjs/testing';
+import * as paginator from './../pagination/paginator';
+
+jest.mock('./../pagination/paginator');
 
 describe('EventsService', () => {
   let service: EventsService;
   let repository: Repository<Event>;
   let selectQb;
   let deleteQb;
+  let mockedPaginate;
 
   beforeEach(async () => {
+    mockedPaginate = paginator.paginate as jest.Mock;
     deleteQb = {
       where: jest.fn(),
       execute: jest.fn(),
@@ -58,18 +63,74 @@ describe('EventsService', () => {
   });
 
   describe('deleteEvent', () => {
-    const createQueryBuildSpy = jest.spyOn(repository, 'createQueryBuilder');
-    const deleteSpy = jest.spyOn(selectQb, 'delete');
-    const whereSpy = jest.spyOn(deleteQb, 'where').mockReturnValue(deleteQb);
-    const executeSpy = jest.spyOn(deleteQb, 'execute');
+    it('should delete an event', async () => {
+      const createQueryBuilderSpy = jest.spyOn(
+        repository,
+        'createQueryBuilder',
+      );
+      const deleteSpy = jest
+        .spyOn(selectQb, 'delete')
+        .mockReturnValue(deleteQb);
+      const whereSpy = jest.spyOn(deleteQb, 'where').mockReturnValue(deleteQb);
+      const executeSpy = jest.spyOn(deleteQb, 'execute');
 
-    expect(service.deleteEvent(1)).resolves.toBe(undefined);
-    expect(createQueryBuildSpy).toHaveBeenCalledTimes(1);
-    expect(createQueryBuildSpy).toHaveBeenCalledWith('e');
+      expect(service.deleteEvent(1)).resolves.toBe(undefined);
 
-    expect(deleteSpy).toHaveBeenCalledTimes(1);
-    expect(whereSpy).toHaveBeenCalledTimes(1);
-    expect(whereSpy).toHaveBeenCalledWith('id = :id', { id: 1 });
-    expect(executeSpy).toHaveBeenCalledTimes(1);
+      expect(createQueryBuilderSpy).toHaveBeenCalledTimes(1);
+      expect(createQueryBuilderSpy).toHaveBeenCalledWith('e');
+
+      expect(deleteSpy).toHaveBeenCalledTimes(1);
+      expect(whereSpy).toHaveBeenCalledTimes(1);
+      expect(whereSpy).toHaveBeenCalledWith('id = :id', { id: 1 });
+      expect(executeSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getEventsAttendedByUserIdPaginated', () => {
+    it('should return a list of paginated events', () => {
+      const orderBySpy = jest
+        .spyOn(selectQb, 'orderBy')
+        .mockReturnValue(selectQb);
+      const leftJoinSpy = jest
+        .spyOn(selectQb, 'leftJoinAndSelect')
+        .mockReturnValue(selectQb);
+      const whereSpy = jest.spyOn(selectQb, 'where').mockReturnValue(selectQb);
+
+      mockedPaginate.mockResolvedValue({
+        first: 1,
+        last: 1,
+        total: 10,
+        perPage: 10,
+        data: [],
+      });
+
+      expect(
+        service.getEventsAttendedByUserIdPaginated(500, {
+          perPage: 1,
+          currentPage: 1,
+        }),
+      ).resolves.toEqual({
+        data: [],
+        first: 1,
+        last: 1,
+        perPage: 10,
+        total: 10,
+      });
+
+      expect(orderBySpy).toBeCalledTimes(1);
+      expect(orderBySpy).toBeCalledWith('e.id', 'DESC');
+
+      expect(leftJoinSpy).toBeCalledTimes(1);
+      expect(leftJoinSpy).toBeCalledWith('e.attendees', 'a');
+
+      expect(whereSpy).toBeCalledTimes(1);
+      expect(whereSpy).toBeCalledWith('a.userId = :userId', { userId: 500 });
+
+      expect(mockedPaginate).toBeCalledTimes(1);
+      expect(mockedPaginate).toBeCalledWith(selectQb, {
+        currentPage: 1,
+        perPage: 1,
+      });
+    });
   });
 });
